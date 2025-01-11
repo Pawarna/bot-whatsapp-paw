@@ -1,4 +1,5 @@
-const { makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
+const { makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMessage,  } = require('@whiskeysockets/baileys');
+const {writeFile} = require('fs/promises');
 const {handleIncomingMessage} = require('../controllers/messageHandler.js');
 const {logger} = require('../utils/logger.js');
 
@@ -10,11 +11,6 @@ const connectToWhatsApp = async () => {
     sock = makeWASocket({
         printQRInTerminal: true,
         auth: state
-    });
-
-    sock = makeWASocket({
-        printQRInTerminal: true,
-        auth: state,
     });
 
     sock.ev.on('connection.update', (update) => {
@@ -35,10 +31,24 @@ const connectToWhatsApp = async () => {
         const msg = m.messages[0];
         if (!msg.message || msg.key.fromMe ) return;
 
+        const messageType = Object.keys (m.messages)[0];
+        if (messageType === 'imageMessage'){
+            const buffer =  await downloadMediaMessage(
+                m,
+                'buffer',
+                { },
+                {
+                    logger,
+                    reuploadRequest: sock.updateMediaMessage
+                }
+            );
+            const filename = `${Date.now()}.jpeg`;
+            await writeFile(`../../media/${filename}`, buffer);
+        }
         const incomingMessage = msg.message.conversation || msg.message.extendedTextMessage?.text;
 
         if(incomingMessage) {
-            logger(`Incoming message : ${incomingMessage}`);
+            logger(`Incoming message from ${msg.key.remoteJid}: ${incomingMessage}`);
             const reply = await handleIncomingMessage({message: {conversation: incomingMessage} });
             sock.sendMessage(msg.key.remoteJid, { text: reply });
         }
