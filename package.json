@@ -1,0 +1,23 @@
+{
+  "name": "whatsapp-bot-paw",
+  "version": "1.0.0",
+  "description": "ChatBot Whatsapp Paw",
+  "main": "index.js",
+  "scripts": {
+    "bot": "node src/bot.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "chatbot",
+    "whatsapp-bot",
+    "paw"
+  ],
+  "author": "pawarna",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@whiskeysockets/baileys": "^6.7.9",
+    "dotenv": "^16.4.7",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
