@@ -1,5 +1,5 @@
-const {createConnection} = require('../config/db.js');
-const { geminiRequest } = require('../services/geminiService.js');
+const {createConnection} = require('../../config/db.js');
+const { geminiRequest } = require('../../services/geminiService.js');
 
 module.exports = {
     name: "tugas",
@@ -16,7 +16,7 @@ module.exports = {
 
                     
                     if (!args){
-                        return await geminiRequest(taskMessages + 'Rapihkan agar mudah dibaca')
+                        return await geminiRequest(taskMessages + 'Dari daftar tugas yang saya berikan, tolong share ke group whatsapp yaa dengan format yang lebih rapih')
                     }
 
                     return await geminiRequest(taskMessages + `Tampilkan hanya tugas ${args}`)

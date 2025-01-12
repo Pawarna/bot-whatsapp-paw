@@ -8,7 +8,7 @@ const handleIncomingMessage = async (message) => {
         if (conversation.startsWith('/')) {
             return await commandRouter(conversation);
           }
-
+        
         return await geminiRequest(conversation); //Response dri Gemini AI
     }catch (err){
         console.error("Error handling message:", err.message);

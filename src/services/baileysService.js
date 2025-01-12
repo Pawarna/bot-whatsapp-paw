@@ -29,23 +29,26 @@ const connectToWhatsApp = async () => {
 
     sock.ev.on('messages.upsert', async (m) => {
         const msg = m.messages[0];
-        if (!msg.message || msg.key.fromMe ) return;
+        if (!msg.message || msg.key.fromMe || msg.key.remoteJid == "6281575257217@s.whatsapp.net") return;
 
-        const messageType = Object.keys (m.messages)[0];
-        if (messageType === 'imageMessage'){
-            const buffer =  await downloadMediaMessage(
-                m,
-                'buffer',
-                { },
-                {
-                    logger,
-                    reuploadRequest: sock.updateMediaMessage
-                }
-            );
-            const filename = `${Date.now()}.jpeg`;
-            await writeFile(`../../media/${filename}`, buffer);
-        }
-        const incomingMessage = msg.message.conversation || msg.message.extendedTextMessage?.text;
+        // Downloading Image not optimalized
+        // const messageType = Object.keys(msg.message)[0];
+        // console.log(messageType)
+        // if (messageType === 'imageMessage'){
+        //     const buffer =  await downloadMediaMessage(
+        //         m,
+        //         'buffer',
+        //         { },
+        //         {
+        //             logger,
+        //             reuploadRequest: sock.updateMediaMessage
+        //         }
+        //     );
+        //     const filename = `${Date.now()}.jpeg`;
+        //     await writeFile(`../../media/${filename}`, buffer);
+        // }
+
+        const incomingMessage = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
 
         if(incomingMessage) {
             logger(`Incoming message from ${msg.key.remoteJid}: ${incomingMessage}`);

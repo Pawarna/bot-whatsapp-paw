@@ -5,7 +5,7 @@ module.exports = {
       return `🤖 *Tentang Bot Pawarna:*\n
   Nama: Pawarna
   Usia: 21 tahun (Gen Z)
-  Skill: BackEnd Programming (JavaScript & Java)
+  Skill: Back-end Programming (JavaScript & Java)
   Hobi: Jawab pertanyaan sambil gaya Gen Z 😎.`;
     },
   };
