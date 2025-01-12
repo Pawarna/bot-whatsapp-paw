@@ -1,13 +1,13 @@
 const {createConnection} = require('../config/db.js');
 const { geminiRequest } = require('../services/geminiService.js');
 
-module.export = {
+module.exports = {
     name: "tugas",
     description: "Menampilkan tugas kuliah yang ada.",
     execute: async (args) => {
         try {
             const conn = await createConnection();
-                const [row] = await conn.execute("SELECT * FROM task WHERE dueDate >= NOW() ORDER BY dueDate ASC");
+                const [rows] = await conn.execute("SELECT * FROM task WHERE dueDate >= NOW() ORDER BY dueDate ASC");
                 if (rows.length > 0) {
                     let taskMessages = 'Halo! Berikut tugas yang tersedia:\n\n';
                     rows.forEach(task => {
@@ -23,7 +23,7 @@ module.export = {
                 } else {
                     return "Selamat! tidak ada tugas hari ini"
                 }
-            await connection.end();
+            await conn.end();
         } catch (error) {
             console.error("Gagal mendapatkan tugas")
         }
