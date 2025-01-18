@@ -6,7 +6,7 @@ module.exports = {
   execute: async () => {
     const commands = [...loadCommands().values()];
     const commandList = commands
-      .map((cmd) => `- *${cmd.name}*: ${cmd.description}`)
+      .map((cmd) => `- */${cmd.name}*: ${cmd.description}`)
       .join('\n');
     return `📖 *Daftar Command Pawarna Bot:*\n\n${commandList}`;
   },

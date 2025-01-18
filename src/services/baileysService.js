@@ -2,7 +2,9 @@ const { makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMess
 const {writeFile} = require('fs/promises');
 const {handleIncomingMessage} = require('../controllers/messageHandler.js');
 const {logger} = require('../utils/logger.js');
+const { loadActiveUser, saveActiveUser } = require('../utils/activeUserUtils.js');
 
+const activeDuration = 5 * 60 * 1000;
 let sock;
 
 const connectToWhatsApp = async () => {
@@ -27,36 +29,37 @@ const connectToWhatsApp = async () => {
 
     sock.ev.on('creds.update', saveCreds);
 
-    sock.ev.on('messages.upsert', async (m) => {
-        const msg = m.messages[0];
-        if (!msg.message || msg.key.fromMe || msg.key.remoteJid == "6281575257217@s.whatsapp.net") return;
-
-        // Downloading Image not optimalized
-        // const messageType = Object.keys(msg.message)[0];
-        // console.log(messageType)
-        // if (messageType === 'imageMessage'){
-        //     const buffer =  await downloadMediaMessage(
-        //         m,
-        //         'buffer',
-        //         { },
-        //         {
-        //             logger,
-        //             reuploadRequest: sock.updateMediaMessage
-        //         }
-        //     );
-        //     const filename = `${Date.now()}.jpeg`;
-        //     await writeFile(`../../media/${filename}`, buffer);
-        // }
-
-        const incomingMessage = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
-
-        if(incomingMessage) {
-            logger(`Incoming message from ${msg.key.remoteJid}: ${incomingMessage}`);
-            const reply = await handleIncomingMessage({message: {conversation: incomingMessage} });
-            sock.sendMessage(msg.key.remoteJid, { text: reply });
+    sock.ev.on("messages.upsert", async (m) => {
+        try {
+          const msg = m.messages[0];
+          if (
+            !msg.message ||
+            msg.key.fromMe ||
+            msg.key.remoteJid == "6281575257217@s.whatsapp.net"
+          )
+            return;
+      
+          const incomingMessage = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
+          if (!incomingMessage) return;
+          const userId = msg.key.remoteJid;
+      
+          
+            const reply = await handleIncomingMessage({
+              message: { conversation: incomingMessage },
+              userId: userId, //kirim userid
+              sock: sock //kirim sock
+            });
+            if(reply){
+              sock.sendMessage(userId, { text: reply });
+            }
+        } catch (e) {
+          console.log(e);
         }
-    });
+      });
+      
 };
+    
+    
 
 module.exports = {connectToWhatsApp};
 

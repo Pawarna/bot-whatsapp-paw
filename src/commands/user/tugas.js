@@ -19,7 +19,7 @@ module.exports = {
                         return await geminiRequest(taskMessages + 'Dari daftar tugas yang saya berikan, tolong share ke group whatsapp yaa dengan format yang lebih rapih')
                     }
 
-                    return await geminiRequest(taskMessages + `Tampilkan hanya tugas ${args}`)
+                    return await geminiRequest(taskMessages + `Tampilkan hanya tugas ${args} jika tugasnya ga ada return "Wah, tugas yang kamu cari ga ada nih"`)
                 } else {
                     return "Selamat! tidak ada tugas hari ini"
                 }
