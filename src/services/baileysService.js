@@ -1,8 +1,9 @@
-const { makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMessage, downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const { writeFile } = require('fs/promises');
 const { handleIncomingMessage } = require('../controllers/messageHandler.js');
 const { logger } = require('../utils/logger.js');
 const { loadUserHistoryFromDb } = require('../database/chatHistory.js');
+const { getMessageType, getCaptionMessage } = require('../utils/checkMessageType.js')
 
 let sock;
 
@@ -32,17 +33,19 @@ const connectToWhatsApp = async () => {
         sock.ev.on('messages.upsert', async (messageUpdate) => {
           try {
             const msg = messageUpdate.messages[0];
+            console.log(JSON.stringify(messageUpdate, undefined, 2))
 
             if (!msg.message || msg.key.fromMe || msg.key.remoteJid === '6281575257217@s.whatsapp.net') {
               return;
             }
 
             const userId = msg.key.remoteJid;
-            let imageBuffer = null;
+            let fileBuffer = null;
+            let caption = null;
 
-
-            if (msg.message?.imageMessage) {
-                imageBuffer = await downloadMediaMessage(
+            const mimetype = getMessageType(msg)
+            if (mimetype) {
+                fileBuffer = await downloadMediaMessage(
                     msg,
                     'buffer',
                     {},
@@ -51,16 +54,23 @@ const connectToWhatsApp = async () => {
                         reuploadOnFail: false,
                     }
                 );
+
+                caption = getCaptionMessage(msg);
             }
 
               const incomingMessage = msg.message.conversation || msg.message.extendedTextMessage?.text;
               const userHistory = await loadUserHistoryFromDb(userId);
               
-               logger(`Received message from ${userId}: ${incomingMessage ? incomingMessage : "pesan berupa gambar"}`);
+              console.log(fileBuffer)
+              logger(`Received message from ${userId}: ${incomingMessage ? incomingMessage : `${mimetype}`}`);
               const reply = await handleIncomingMessage({
                   message: { 
                      conversation: incomingMessage,
-                     imageBuffer,
+                     file : {
+                        fileBuffer,
+                        mimetype,
+                        caption,
+                     }
                     },
                   userId,
                   sock,
