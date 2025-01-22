@@ -4,7 +4,7 @@ const {logger} = require('./utils/logger.js')
 
 // Memuat semua command
 const commands = loadCommands();
-logger('Command yang berhasil dimuat:', [...commands.keys()])
+logger('Command yang berhasil dimuat:' + [...commands.keys()])
 
 const commandRouter = async (message) => {
   // Memisahkan command dan argumen

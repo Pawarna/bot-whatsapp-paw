@@ -35,7 +35,7 @@ const connectToWhatsApp = async () => {
             const msg = messageUpdate.messages[0];
             console.log(JSON.stringify(messageUpdate, undefined, 2))
 
-            if (!msg.message || msg.key.fromMe || msg.key.remoteJid === '6281575257217@s.whatsapp.net') {
+            if (!msg.message || msg.key.fromMe) {
               return;
             }
 
