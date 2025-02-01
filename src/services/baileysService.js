@@ -31,60 +31,68 @@ const connectToWhatsApp = async () => {
         sock.ev.on('creds.update', saveCreds);
 
         sock.ev.on('messages.upsert', async (messageUpdate) => {
-          try {
-            const msg = messageUpdate.messages[0];
-            console.log(JSON.stringify(messageUpdate, undefined, 2))
-
-            if (!msg.message || msg.key.fromMe) {
-              return;
-            }
-
-            const userId = msg.key.remoteJid;
-            let fileBuffer = null;
-            let caption = null;
-
-            const mimetype = getMessageType(msg)
-            if (mimetype) {
-                fileBuffer = await downloadMediaMessage(
-                    msg,
-                    'buffer',
-                    {},
-                    {
-                        logger: console,
-                        reuploadOnFail: false,
-                    }
+            try {
+              // Ambil pesan pertama dari message update
+              const receivedMessage = messageUpdate.messages[0];
+              console.log(JSON.stringify(messageUpdate, undefined, 2));
+          
+              // Abaikan jika tidak ada pesan atau pesan dari diri sendiri
+              if (!receivedMessage.message || receivedMessage.key.fromMe) {
+                return;
+              }
+          
+              // Ambil ID user dan nama pengguna
+              const senderId = receivedMessage.key.remoteJid;
+              const senderName = receivedMessage.pushName;
+              let mediaBuffer = null;
+              let messageCaption = null;
+          
+              // Cek tipe pesan dan download media jika ada
+              const messageType = getMessageType(receivedMessage);
+              if (messageType) {
+                mediaBuffer = await downloadMediaMessage(
+                  receivedMessage,
+                  'buffer',
+                  {},
+                  {
+                    logger: console,
+                    reuploadOnFail: false,
+                  }
                 );
-
-                caption = getCaptionMessage(msg);
-            }
-
-              const incomingMessage = msg.message.conversation || msg.message.extendedTextMessage?.text;
-              const userHistory = await loadUserHistoryFromDb(userId);
-              
-              console.log(fileBuffer)
-              logger(`Received message from ${userId}: ${incomingMessage ? incomingMessage : `${mimetype}`}`);
-              const reply = await handleIncomingMessage({
-                  message: { 
-                     conversation: incomingMessage,
-                     file : {
-                        fileBuffer,
-                        mimetype,
-                        caption,
-                     }
-                    },
-                  userId,
-                  sock,
-                  userHistory
+                 messageCaption = getCaptionMessage(receivedMessage);
+              }
+          
+              // Ambil isi pesan dari caption atau conversation atau extended text
+              const incomingText = messageCaption || receivedMessage.message.conversation || receivedMessage.message.extendedTextMessage?.text;
+               // Load riwayat chat dari database
+              const chatHistory = await loadUserHistoryFromDb(senderId);
+          
+              console.log(mediaBuffer);
+              logger(`Received message from ${senderId}: ${incomingText ? incomingText : `${messageType}`}`);
+          
+              // Proses pesan dan dapatkan reply
+              const replyMessage = await handleIncomingMessage({
+                conversation: incomingText,
+                media: {
+                  mediaBuffer: mediaBuffer,
+                  messageType: messageType,
+                  messageCaption: messageCaption,
+                },
+                senderId: senderId,
+                senderName: senderName,
+                sock,
+                chatHistory: chatHistory,
               });
-    
-            if (reply) {
-                  await sock.sendMessage(userId, { text: reply });
-                   logger(`Reply sent to ${userId}`);
+          
+              // Kirim reply jika ada
+              if (replyMessage) {
+                await sock.sendMessage(senderId, { text: replyMessage });
+                logger(`Reply sent to ${senderId}`);
               }
             } catch (error) {
-                logger(`Error processing message: ${error.message}`);
+              logger(`Error processing message: ${error.message}`);
             }
-        });
+          });
     } catch (error) {
         logger(`Failed to connect to WhatsApp: ${error.message}`);
     }

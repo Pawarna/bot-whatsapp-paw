@@ -33,7 +33,7 @@ const getCaptionMessage = (m) => {
     } else if (message.stickerMessage){
         caption = "berikan reaksi yang sesuai terhadap stiker yang diberikan. Reaksi harus relevan dengan topik atau suasana percakapan sebelumnya, serta mencerminkan emosi atau maksud dari stiker tersebut."
     } else if (message?.audioMessage){
-        caption = "Dengarkan suara ini dan berikan tanggapan berdasarkan history percakapan"
+        caption = ""
     }
 
     return caption;
