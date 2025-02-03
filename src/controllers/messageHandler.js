@@ -75,7 +75,7 @@ const handleIncomingMessage = async (message) => {
     }
 
     // Cek jika bot perlu aktivasi
-    if (conversation && conversation.toLowerCase().includes("paw")) {
+    if (conversation && conversation.toLowerCase().includes(["paw", '62857022078042'])) {
       logger(`User ${senderId} memanggil paw, mengaktifkan bot`);
 
       const newUserData = {

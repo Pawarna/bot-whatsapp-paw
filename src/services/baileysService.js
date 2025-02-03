@@ -1,9 +1,8 @@
 const { makeWASocket, DisconnectReason, useMultiFileAuthState, downloadMediaMessage, downloadContentFromMessage } = require('@whiskeysockets/baileys');
-const { writeFile } = require('fs/promises');
 const { handleIncomingMessage } = require('../controllers/messageHandler.js');
 const { logger } = require('../utils/logger.js');
 const { loadUserHistoryFromDb } = require('../database/chatHistory.js');
-const { getMessageType, getCaptionMessage } = require('../utils/checkMessageType.js')
+const { getMessageType, getCaptionMessage } = require('../utils/checkMessageType.js');
 
 let sock;
 
@@ -86,12 +85,15 @@ const connectToWhatsApp = async () => {
           
               // Kirim reply jika ada
               if (result) {
+                const buffer = result.content;
                 if (result.type === 'text') {
                   await sock.sendMessage(senderId, { text: result.content });
                 } else if (result.type === 'sticker') {
                   await sock.sendMessage(senderId, { sticker: result.content });
                 } else if (result.type === 'video') {
-                  await sock.sendMessage(senderId, { video: { url: result.content } });
+                  await sock.sendMessage(senderId, { video: buffer, caption: result.caption });
+                } else if (result.type === 'image') {
+                  await sock.sendMessage(senderId, { image: buffer, caption: result.caption });
                 }
                 logger(`Reply sent to ${senderId}`);
               }

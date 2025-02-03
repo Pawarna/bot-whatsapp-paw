@@ -12,7 +12,7 @@ module.exports = {
         const stringArgs = args.join(' '); // Gabung array jadi string
         const trimmedArgs = stringArgs.trim(); // Trim string
   
-        const result = trimmedArgs.match(/^([\d-]+)\s+(.*)$/);
+        const result = trimmedArgs.match(/^(\+?\d+)\s+(.*)$/);
         
         let phoneNumber = null;
         let message = null
