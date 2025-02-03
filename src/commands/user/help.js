@@ -8,6 +8,9 @@ module.exports = {
     const commandList = commands
       .map((cmd) => `- */${cmd.name}*: ${cmd.description}`)
       .join('\n');
-    return `📖 *Daftar Command Pawarna Bot:*\n\n${commandList}`;
+    return {
+      type : 'text',
+      content : `📖 *Daftar Command Pawarna Bot:*\n\n${commandList}`
+    };
   },
 };

@@ -7,23 +7,36 @@ const commands = loadCommands();
 logger('Command yang berhasil dimuat:' + [...commands.keys()])
 
 const commandRouter = async (message) => {
-  // Memisahkan command dan argumen
-  const [command, ...args] = message.trim().split(/\s+/);
+  const { conversation, senderId, sock, media } = message;
 
+  // Memisahkan command dan argumen
+  const [command, ...args] = conversation.trim().split(/\s+/);
+  
   // Cek apakah command valid
   const commandKey = command.startsWith('/') ? command.slice(1).toLowerCase() : command.toLowerCase();
   if (commands.has(commandKey)) {
     // Jalankan command jika valid
-    return await commands.get(commandKey).execute(args);
+    return await commands.get(commandKey).execute({
+      args,
+      senderId,
+      sock,
+      media,
+    });
   }
 
   // Jika tidak valid, cari command yang mirip
   const closestCommand = getClosestCommand(commandKey, [...commands.keys()]);
   if (closestCommand) {
-    return `⚠️ Mungkin maksud Anda: *${closestCommand}*? Ketik command tersebut untuk melanjutkan.`;
+    return {
+      type : 'text',
+      content : `⚠️ Mungkin maksud Anda: *${closestCommand}*? Ketik command tersebut untuk melanjutkan.`
+    };
   }
 
   // Jika tidak ada yang cocok
-  return '⚠️ Maaf, command tidak dikenali. Ketik */help* untuk melihat daftar command yang tersedia.';
+  return {
+    type: "text",
+    content: '⚠️ Maaf, command tidak dikenali. Ketik */help* untuk melihat daftar command yang tersedia.'
+  };
 };
 module.exports = { commandRouter };

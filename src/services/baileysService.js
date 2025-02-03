@@ -71,7 +71,7 @@ const connectToWhatsApp = async () => {
               logger(`Received message from ${senderId}: ${incomingText ? incomingText : `${messageType}`}`);
           
               // Proses pesan dan dapatkan reply
-              const replyMessage = await handleIncomingMessage({
+              const result = await handleIncomingMessage({
                 conversation: incomingText,
                 media: {
                   mediaBuffer: mediaBuffer,
@@ -85,13 +85,21 @@ const connectToWhatsApp = async () => {
               });
           
               // Kirim reply jika ada
-              if (replyMessage) {
-                await sock.sendMessage(senderId, { text: replyMessage });
+              if (result) {
+                if (result.type === 'text') {
+                  await sock.sendMessage(senderId, { text: result.content });
+                } else if (result.type === 'sticker') {
+                  await sock.sendMessage(senderId, { sticker: result.content });
+                } else if (result.type === 'video') {
+                  await sock.sendMessage(senderId, { video: { url: result.content } });
+                }
                 logger(`Reply sent to ${senderId}`);
               }
+
             } catch (error) {
               logger(`Error processing message: ${error.message}`);
             }
+
           });
     } catch (error) {
         logger(`Failed to connect to WhatsApp: ${error.message}`);

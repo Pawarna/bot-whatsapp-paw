@@ -4,7 +4,7 @@ const { geminiRequest } = require('../../services/geminiService.js');
 module.exports = {
     name: "tugas",
     description: "Menampilkan tugas kuliah yang ada.",
-    execute: async (args) => {
+    execute: async ({args}) => {
         try {
             const conn = await createConnection();
                 const [rows] = await conn.execute("SELECT * FROM task WHERE dueDate >= NOW() ORDER BY dueDate ASC");
@@ -16,12 +16,21 @@ module.exports = {
 
                     
                     if (!args){
-                        return await geminiRequest(taskMessages + 'Dari daftar tugas yang saya berikan, tolong share ke group whatsapp yaa dengan format yang lebih rapih')
+                        return {
+                            type : "text",
+                            content: await geminiRequest(taskMessages + 'Dari daftar tugas yang saya berikan, tolong share ke group whatsapp yaa dengan format yang lebih rapih')
+                        }
                     }
 
-                    return await geminiRequest(taskMessages + `Tampilkan hanya tugas ${args} jika tugasnya ga ada return "Wah, tugas yang kamu cari ga ada nih"`)
+                    return {
+                        type : 'text',
+                        content : await geminiRequest(taskMessages + `Tampilkan hanya tugas ${args} jika tugasnya ga ada return "Wah, tugas yang kamu cari ga ada nih"`)
+                    }
                 } else {
-                    return "Selamat! tidak ada tugas hari ini"
+                    return {
+                        type: 'text',
+                        content: "Selamat! tidak ada tugas hari ini",
+                      };
                 }
             await conn.end();
         } catch (error) {

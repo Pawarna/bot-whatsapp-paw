@@ -15,13 +15,18 @@ const handleIncomingMessage = async (message) => {
 
     if (conversation && conversation.startsWith("/")) {
       logger(`Menjalankan command untuk user ${senderId}: ${conversation}`);
-      return await commandRouter(conversation);
+      return await commandRouter({
+        conversation,
+        senderId,
+        sock,
+        media : {mediaBuffer, messageType, messageCaption}
+      });
     }
 
     let userData = await loadActiveUser(senderId);
-    
+
     // Cek Inaktif diawal
-    if(userData && userData.isActive) {
+    if (userData && userData.isActive) {
       if (Date.now() - userData.lastActive > activeDuration) {
         userData.isActive = false;
         await saveActiveUser(senderId, userData);
@@ -44,9 +49,17 @@ const handleIncomingMessage = async (message) => {
           "user",
           `Pesan berupa file : ${messageType}, dengan caption :${messageCaption}`
         );
-        const replyMessage = await analyzeFile(mediaBuffer, messageType, messageCaption, chatHistory);
+        const replyMessage = await analyzeFile(
+          mediaBuffer,
+          messageType,
+          messageCaption,
+          chatHistory
+        );
         await saveMessageToDb(senderId, "model", replyMessage);
-        return replyMessage;
+        return {
+          type: "text",
+          content: replyMessage,
+        };
       }
       if (conversation) {
         logger(`Balas pesan ke ${senderId}: ${conversation}`);
@@ -54,7 +67,10 @@ const handleIncomingMessage = async (message) => {
 
         const replyMessage = await geminiRequest(conversation, chatHistory);
         await saveMessageToDb(senderId, "model", replyMessage);
-        return replyMessage;
+        return {
+          type: "text",
+          content: replyMessage,
+        };
       }
     }
 
@@ -69,29 +85,40 @@ const handleIncomingMessage = async (message) => {
       await saveActiveUser(senderId, newUserData);
       await saveMessageToDb(senderId, "user", conversation);
 
-
       if (mediaBuffer) {
-         await saveMessageToDb(
-            senderId,
-            "user",
-            `Pesan berupa file : ${messageType}, dengan caption :${messageCaption}`
-          );
-        const replyMessage = await analyzeFile(mediaBuffer, messageType, messageCaption, chatHistory);
+        await saveMessageToDb(
+          senderId,
+          "user",
+          `Pesan berupa file : ${messageType}, dengan caption :${messageCaption}`
+        );
+        const replyMessage = await analyzeFile(
+          mediaBuffer,
+          messageType,
+          messageCaption,
+          chatHistory
+        );
         await saveMessageToDb(senderId, "model", replyMessage);
-        return replyMessage;
+        return {
+          type: "text",
+          content: replyMessage,
+        };
       }
-       const replyMessage = await geminiRequest(conversation, chatHistory);
-        await saveMessageToDb(senderId, "model", replyMessage);
-      return replyMessage;
+      const replyMessage = await geminiRequest(conversation, chatHistory);
+      await saveMessageToDb(senderId, "model", replyMessage);
+      return {
+        type: "text",
+        content: replyMessage,
+      };
     }
 
     return null;
   } catch (err) {
     console.error("Error handling message:", err.message);
-    return "Maaf, Bot lagi error";
+    return {
+      type: "text",
+      content: "Maaf, bot lagi error",
+    };
   }
 };
-
-
 
 module.exports = { handleIncomingMessage };
