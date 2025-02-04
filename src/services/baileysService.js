@@ -20,10 +20,10 @@ const connectToWhatsApp = async () => {
 
             if (connection === 'close') {
                 const shouldReconnect = (lastDisconnect?.error)?.output?.statusCode !== DisconnectReason.loggedOut;
-                logger('Connection closed. Reconnecting...');
+                logger.info('Connection closed. Reconnecting...');
                 if (shouldReconnect) connectToWhatsApp();
             } else if (connection === 'open') {
-                logger('WhatsApp connection established.');
+                logger.info('WhatsApp connection established.');
             }
         });
 
@@ -54,7 +54,7 @@ const connectToWhatsApp = async () => {
                   'buffer',
                   {},
                   {
-                    logger: console,
+                    logger,
                     reuploadOnFail: false,
                   }
                 );
@@ -65,9 +65,8 @@ const connectToWhatsApp = async () => {
               const incomingText = messageCaption || receivedMessage.message.conversation || receivedMessage.message.extendedTextMessage?.text;
                // Load riwayat chat dari database
               const chatHistory = await loadUserHistoryFromDb(senderId);
-          
-              console.log(mediaBuffer);
-              logger(`Received message from ${senderId}: ${incomingText ? incomingText : `${messageType}`}`);
+        
+              logger.info(`Received message from ${senderId}: ${incomingText ? incomingText : `${messageType}`}`);
           
               // Proses pesan dan dapatkan reply
               const result = await handleIncomingMessage({
@@ -95,16 +94,16 @@ const connectToWhatsApp = async () => {
                 } else if (result.type === 'image') {
                   await sock.sendMessage(senderId, { image: buffer, caption: result.caption });
                 }
-                logger(`Reply sent to ${senderId}`);
+                logger.info(`Reply sent to ${senderId}`);
               }
 
             } catch (error) {
-              logger(`Error processing message: ${error.message}`);
+              logger.error(`Error processing message: ${error.message}`);
             }
 
           });
     } catch (error) {
-        logger(`Failed to connect to WhatsApp: ${error.message}`);
+        logger.error(`Failed to connect to WhatsApp: ${error.message}`);
     }
 };
 

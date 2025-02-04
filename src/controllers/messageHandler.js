@@ -14,7 +14,7 @@ const handleIncomingMessage = async (message) => {
     const { mediaBuffer, messageType, messageCaption } = message.media;
 
     if (conversation && conversation.startsWith("/")) {
-      logger(`Menjalankan command untuk user ${senderId}: ${conversation}`);
+      logger.info(`Menjalankan command untuk user ${senderId}: ${conversation}`);
       return await commandRouter({
         conversation,
         senderId,
@@ -62,7 +62,7 @@ const handleIncomingMessage = async (message) => {
         };
       }
       if (conversation) {
-        logger(`Balas pesan ke ${senderId}: ${conversation}`);
+        logger.info(`Balas pesan ke ${senderId}: ${conversation}`);
         await saveMessageToDb(senderId, "user", conversation);
 
         const replyMessage = await geminiRequest(conversation, chatHistory);
@@ -76,7 +76,7 @@ const handleIncomingMessage = async (message) => {
 
     // Cek jika bot perlu aktivasi
     if (conversation && conversation.toLowerCase().includes("paw")) {
-      logger(`User ${senderId} memanggil paw, mengaktifkan bot`);
+      logger.info(`User ${senderId} memanggil paw, mengaktifkan bot`);
 
       const newUserData = {
         isActive: true,
@@ -113,7 +113,7 @@ const handleIncomingMessage = async (message) => {
 
     return null;
   } catch (err) {
-    console.error("Error handling message:", err.message);
+    logger.error("Error handling message:", err.message);
     return {
       type: "text",
       content: "Maaf, bot lagi error",

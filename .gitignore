@@ -4,3 +4,5 @@ package-lock.json
 auth_info_baileys/
 active_users/
 media/
+logs/
+.idea/

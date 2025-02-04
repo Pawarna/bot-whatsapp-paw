@@ -4,7 +4,7 @@ const { logger } = require('./utils/logger.js');
 
 const startApp = async () => {
     await connectToWhatsApp();
-    logger('WhatsApp bot is running...');
+    logger.info('WhatsApp bot is running...');
 };
 
 startApp();
