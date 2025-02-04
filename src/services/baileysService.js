@@ -79,6 +79,7 @@ const connectToWhatsApp = async () => {
                 senderId: senderId,
                 senderName: senderName,
                 sock,
+                receivedMessage,
                 chatHistory: chatHistory,
               });
           

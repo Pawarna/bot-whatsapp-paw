@@ -10,7 +10,7 @@ module.exports = {
       .join('\n');
     return {
       type : 'text',
-      content : `📖 *Daftar Command Pawarna Bot:*\n\n${commandList}`
+      content : `📖 *Daftar Command Pawarna Bot:* \n\n- *Ketik "paw"*: untuk chatingan menggunakan Chat-bot\n${commandList}`
     };
   },
 };

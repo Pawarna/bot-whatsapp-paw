@@ -1,4 +1,4 @@
-const { createCanvas, loadImage, registerFont } = require('canvas');
+const { createCanvas } = require('canvas');
 const sharp = require('sharp');
 const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
@@ -125,52 +125,34 @@ async function createSticker(text) {
   // Terapkan efek blur menggunakan sharp
   // Nilai blur (misalnya 2) bisa disesuaikan agar terlihat sedikit distorsi
   const blurredBuffer = await sharp(imageBuffer)
-    .blur(1)  // gunakan nilai sigma sesuai kebutuhan (misal 2-3 untuk efek ringan)
+    .blur(1)
+    .toFormat('webp')
+    .withMetadata({
+      exif: {
+        IFD0: {
+          Artist: 'Paw-bot',    // Nama pembuat
+          Copyright: 'Dibuat oleh Paw', // Informasi hak cipta
+          Software: 'Custom WhatsApp Bot'
+        }
+      }
+    })  // gunakan nilai sigma sesuai kebutuhan (misal 2-3 untuk efek ringan)
     .toBuffer();
   
   return blurredBuffer;
-}
-
-
-async function convertToSticker(imageBuffer) {
-  const tempImagePath = path.join(__dirname, 'temp_image.png');
-  const tempStickerPath = path.join(__dirname, 'temp_sticker.webp');
-
-  // Simpan gambar sementara
-  await sharp(imageBuffer).toFile(tempImagePath);
-
-  // Konversi ke WebP menggunakan ffmpeg
-  await new Promise((resolve, reject) => {
-    ffmpeg(tempImagePath)
-      .output(tempStickerPath)
-      .on('end', resolve)
-      .on('error', reject)
-      .run();
-  });
-
-  // Baca file stiker
-  const stickerBuffer = fs.readFileSync(tempStickerPath);
-
-  // Hapus file sementara
-  fs.unlinkSync(tempImagePath);
-  fs.unlinkSync(tempStickerPath);
-
-  return stickerBuffer;
 }
 
 module.exports = {
   name: 'sticker',
   description: 'Convert text to sticker',
   async execute({args}) {
-    const text = args.join(' '); // Gabungkan semua argumen menjadi satu string
+    const text = args.join(' ');
 
     if (!text) {
       return { type: 'text', content: '⚠️ Mohon berikan teks. Contoh: /sticker Aku jago loh' };
     }
 
     try {
-      const imageBuffer = await createSticker(text);
-      const stickerBuffer = await convertToSticker(imageBuffer);
+      const stickerBuffer = await createSticker(text);
       return { type: 'sticker', content: stickerBuffer };
     } catch (error) {
       console.error('Error creating sticker:', error);

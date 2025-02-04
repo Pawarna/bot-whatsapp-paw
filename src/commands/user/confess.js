@@ -5,7 +5,7 @@ module.exports = {
         if (!args) {
             return {
               type: 'text',
-              content: '*⚠️Format perintah salah*, gunakan format seperti ini: `/fess nomor pesan`'
+              content: '⚠️ *Format perintah salah*, gunakan format seperti ini: `/fess nomor pesan`'
             };
         }
 

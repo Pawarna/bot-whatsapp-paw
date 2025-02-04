@@ -6,13 +6,16 @@ const { commandRouter } = require("../routes.js");
 const { geminiRequest, analyzeFile } = require("../services/geminiService.js");
 const { logger } = require("../utils/logger.js");
 const { saveMessageToDb } = require("../database/chatHistory.js");
+const anonymousService = require('../services/anonymousService.js');
+
 const activeDuration = 5 * 60 * 1000;
 
 const handleIncomingMessage = async (message) => {
   try {
-    const { conversation, senderId, sock, chatHistory } = message;
+    const { conversation, senderId, sock, chatHistory, receivedMessage } = message;
     const { mediaBuffer, messageType, messageCaption } = message.media;
-
+    
+    
     if (conversation && conversation.startsWith("/")) {
       logger.info(`Menjalankan command untuk user ${senderId}: ${conversation}`);
       return await commandRouter({
@@ -21,6 +24,12 @@ const handleIncomingMessage = async (message) => {
         sock,
         media : {mediaBuffer, messageType, messageCaption}
       });
+    }
+    
+    if (await anonymousService.isInChat(senderId)) {
+      // Teruskan pesan ke pasangan
+      await anonymousService.forwardMessage(sock, senderId, receivedMessage);
+      return;
     }
 
     let userData = await loadActiveUser(senderId);
@@ -113,7 +122,7 @@ const handleIncomingMessage = async (message) => {
 
     return null;
   } catch (err) {
-    logger.error("Error handling message:", err.message);
+    logger.error("Error handling message:", err);
     return {
       type: "text",
       content: "Maaf, bot lagi error",
