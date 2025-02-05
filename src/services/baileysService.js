@@ -91,7 +91,7 @@ const connectToWhatsApp = async () => {
                 } else if (result.type === 'sticker') {
                   await sock.sendMessage(senderId, { sticker: result.content });
                 } else if (result.type === 'video') {
-                  await sock.sendMessage(senderId, { video: buffer, caption: result.caption });
+                  await sock.sendMessage(senderId, { video: { stream : buffer }, caption: result.caption });
                 } else if (result.type === 'image') {
                   await sock.sendMessage(senderId, { image: buffer, caption: result.caption });
                 }

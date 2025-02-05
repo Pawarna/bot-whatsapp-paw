@@ -3,7 +3,7 @@ const anonymousService = require('../../services/anonymousService');
 
 module.exports = {
   name: 'anonym',
-  description: 'Masuk/keluar dari mode chat anonymous. Opsional: masukkan gender dan topic.',
+  description: 'Masuk/keluar dari mode chat anonymous. Opsional: masukkan gender dan topic. Contoh : /anonym male gaming',
   execute: async ({ args, sock, senderId }) => {
     const sender = senderId
 

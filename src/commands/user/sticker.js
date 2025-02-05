@@ -1,6 +1,5 @@
 const { createCanvas } = require('canvas');
 const sharp = require('sharp');
-const ffmpeg = require('fluent-ffmpeg');
 const fs = require('fs');
 const path = require('path');
 

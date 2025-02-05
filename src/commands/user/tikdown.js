@@ -1,5 +1,6 @@
 const { downloadTiktok } = require('@mrnima/tiktok-downloader');
 const { default: axios } = require('axios');
+const { logger } = require('../../utils/logger');
 
 module.exports = {
     name: 'tikdown',
@@ -11,7 +12,7 @@ module.exports = {
         if (!url) {
             return {
                 type: "text",
-                content: "⚠️ Harap masukkan link TikTok yang valid. Contoh : /tikdown url-tiktok"
+                content: "⚠ Harap masukkan link TikTok yang valid. Contoh : /tikdown url-tiktok"
             };
         }
 
@@ -20,7 +21,7 @@ module.exports = {
             if (!vt) {
                 return {
                     type: 'text',
-                    content: '⚠️ Gagal menemukan media pada postingan Tiktok. Pastikan link yang diberikan benar dan postingan bersifat publik.'
+                    content: '⚠ Gagal menemukan media pada postingan Tiktok. Pastikan link yang diberikan benar dan postingan bersifat publik.'
                 }
             }
 
@@ -28,6 +29,7 @@ module.exports = {
                 text: "🔄 Sedang mengunduh media dari postingan Tiktok..."
             });
 
+            // Bagian untuk mengirim gambar (tidak diubah, karena sudah efisien)
             if (vt.result.dl_link.images){
                 for (const image of vt.result.dl_link.images) {
                     try {
@@ -37,9 +39,9 @@ module.exports = {
                         await sock.sendMessage(senderId, { image : buffer})
                         
                     } catch (error) {
-                        console.error("Error saat mengunduh media:", err);
+                        logger.error("Error saat mengunduh media:", error);
                         await sock.sendMessage(senderId, {
-                          text: "⚠️ Terjadi kesalahan saat mengunduh salah satu media."
+                          text: "⚠ Terjadi kesalahan saat mengunduh salah satu media."
                         });
                     }
 
@@ -47,42 +49,46 @@ module.exports = {
 
             }
 
+            // Bagian untuk mengirim video (DIUBAH MENGGUNAKAN STREAM)
             try {
                 if (vt.result.dl_link.download_mp4_1){
-                    let response = null;
-                    let buffer = null;
-
-                    if (isHD){
-                        response = await axios.get(vt.result.dl_link.download_mp4_hd, { responseType: "arraybuffer" });
-                    } else {
-                        response = await axios.get(vt.result.dl_link.download_mp4_1, { responseType: "arraybuffer" });
+                    let videoUrl = isHD ? vt.result.dl_link.download_mp4_hd : vt.result.dl_link.download_mp4_1;
+                    if (!videoUrl) {
+                        return {
+                            type: 'text',
+                            content: '⚠ Video HD tidak tersedia.'
+                        };
                     }
 
-                    buffer = Buffer.from((await response).data, "binary");
-                    console.log(buffer)
-                    return {
+                    const response = await axios({
+                        method: 'GET',
+                        url: videoUrl,
+                        responseType: 'stream'
+                    });
+
+                    return { 
                         type: 'video',
-                        content: buffer,
+                        content: response.data,
                         caption: `${vt.result.title}`
-                    }
+                    };
                 }
 
                 
             } catch (error) {
-                console.error("Error saat mengunduh media:", err);
-                await sock.sendMessage(senderId, { text: "⚠️ Terjadi kesalahan saat mengunduh salah satu media." });
+                logger.error("Error saat mengunduh media:", error);
+                await sock.sendMessage(senderId, { text: "⚠ Terjadi kesalahan saat mengunduh salah satu media." });
             }
             
-        return {
+        return { 
             type: 'text',
             content: `${vt.result.title}`
         }
             
         } catch (error) {
-            console.error("Error saat memproses URL Tiktok:", error);
+            logger.error("Error saat memproses URL Tiktok:", error);
             return {
                 type: "text",
-                content: "⚠️ Terjadi kesalahan saat memproses link Tiktok. Pastikan link tersebut valid dan postingan bersifat publik."
+                content: "⚠ Terjadi kesalahan saat memproses link Tiktok. Pastikan link tersebut valid dan postingan bersifat publik."
             };
         }
 

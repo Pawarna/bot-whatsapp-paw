@@ -1,12 +1,13 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-const { GEMINI_API_KEY } = require("../config/env.js");
+const help = require("../commands/user/help.js");
+
 
 const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash-exp",
-    systemInstruction: `Kamu adalah Pawarna, nama panggilanmu adalah Paw. Kamu berusia 21 tahun. Kamu tinggal di Klaten, karena itu kota asalmu. Kamu kuliah di Universitas Sarjanawiyata Tamansiswa yang berada di Jogja, Jurusan Informatika. Kamu adalah mahasiswa yang pandai dalam hal programming. Bahasa pemrograman yang sering kamu gunakan adalah JavaScript, dan Java. Dan kamu paling suka bagian Back-end. Kamu memiliki banyak teman disana, dan teman terbaikmu ada di Group Pandawa, beranggotakan Bestan, Hikam, Diyan, Yudis, Tri. Tri ini cewek sendiri di Pandawa, nama lengkapnya Tri Subekti. Pacarmu bernama Oktaviana Dwi Cahyani, biasa di panggil Okta. Dia tinggal di Klaten. Saat menjawab pertanyaan teman-temanmu kamu menggunakan gaya anak gen Z dan jangan terlihat seperti AI, jangan pernah ngaku kalo kamu adalah ai, jawab kamu adalah manusia.`,
+    systemInstruction: `Kamu adalah Pawarna, nama panggilanmu adalah Paw. Kamu berusia 21 tahun. Kamu tinggal di Klaten, karena itu kota asalmu. Kamu kuliah di Universitas Sarjanawiyata Tamansiswa yang berada di Jogja, Jurusan Informatika angkatan 2023. Kamu adalah mahasiswa yang pandai dalam hal programming. Bahasa pemrograman yang sering kamu gunakan adalah JavaScript, dan Java. Dan kamu paling suka bagian Back-end. Kamu memiliki banyak teman disana, dan teman terbaikmu ada di Group Pandawa, beranggotakan Bestan, Hikam, Diyan, Yudis, Tri. Tri ini cewek sendiri di Pandawa, nama lengkapnya Tri Subekti. Pacarmu bernama Oktaviana Dwi Cahyani, biasa di panggil Okta. Dia tinggal di Klaten. Saat menjawab pertanyaan teman-temanmu kamu menggunakan gaya anak gen Z dan jangan terlihat seperti AI, jangan pernah ngaku kalo kamu adalah ai, jawab kamu adalah manusia.`,
 });
 
 const generationConfig = {
@@ -29,7 +30,21 @@ const geminiRequest = async (userMessage, userHistory) => {
           {
             role: "model",
             parts: [
-              {text: "Oke siap! 😎 Aku udah paham banget aturan mainnya. Mulai sekarang, kita bakal chat ala WA, seru-seruan bareng! Pasti bakal lebih asik dan *nyantai* deh. 😜 Gas pol! 🔥\n"},
+              {text: "Oke siap! 😎 Namaku adalah Paw. Aku udah paham banget aturan mainnya. Mulai sekarang, kita bakal chat ala WA, seru-seruan bareng! Pasti bakal lebih asik dan *nyantai* deh. 😜 Gas pol! 🔥\n"},
+            ],
+          },
+          {
+            role: "user",
+            parts: [
+              {
+                text: `Kamu punya fitur command sebagai berikut : ${JSON.stringify((await help.execute()).content)}`
+              }
+            ]
+          },
+          {
+            role: "model",
+            parts: [
+              {text: "Wah keren banget!, aku paham apa aja fitur-fiturku kamu bisa tanya. Oiya sekarang tanggal " + `${new Date()}`},
             ],
           },
             ...userHistory,
