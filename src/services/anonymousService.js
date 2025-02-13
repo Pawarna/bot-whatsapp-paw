@@ -143,13 +143,56 @@ async function forwardMessage(sock, sender, msg) {
     if (rows.length > 0 && rows[0].partner_jid) {
       const partnerJid = rows[0].partner_jid;
 
-      if (msg.message.conversation) {
+      const message = msg.message?.conversation || msg.message?.extendedTextMessage?.text
+
+      const quoted = msg.message.extendedTextMessage?.contextInfo?.quotedMessage || msg.message.extendedTextMessage?.contextInfo?.quotedMessage?.conversation;
+      const quotedKey = msg.message.extendedTextMessage?.contextInfo?.stanzaId;
+      const participant = msg.message.extendedTextMessage?.contextInfo?.participant;
+      const messageId = msg.key?.id;
+
+      if (message) {
         await sock.sendMessage(partnerJid, { 
-          text: msg.message.conversation 
-        });
-        return;
-      } else {
-        await sock.sendMessage(partnerJid, { forward: msg })
+          text: message,
+          contextInfo: quoted
+              ? { 
+                    quotedMessage: quoted, 
+                    stanzaId: quotedKey,
+                    participant: msg.message.extendedTextMessage?.contextInfo?.quotedMessage?.conversation? participant : partnerJid  // pastikan participant mengacu ke pengirim asli pesan yang direply
+                }
+              : undefined
+        },
+        { messageId }
+      );
+      } else if (msg.message?.reactionMessage){
+        await sock.sendMessage(
+          partnerJid,
+          {
+              react: {
+                  text: msg.message.reactionMessage?.text,
+                  key: {
+                    remoteJid: partnerJid,
+                    fromMe: !msg.message.reactionMessage?.key?.fromMe,
+                    id: msg.message.reactionMessage?.key?.id,
+                  }
+              }
+          }
+        )
+      } else if (msg.message?.pollCreationMessageV3) {
+        const poll = msg.message.pollCreationMessageV3;
+        const question = poll.name;
+        const options = poll.options.map(opt => opt.optionName);
+        
+        await sock.sendMessage(
+          partnerJid,
+          {
+            poll: {
+              name: question,
+              values: options,
+              selectableCount: poll.selectableOptionsCount || 1
+            }
+          },
+          { messageId: messageId } // Gunakan ID yang sama atau generate baru
+        );
       }
   
     }

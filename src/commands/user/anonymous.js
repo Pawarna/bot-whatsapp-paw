@@ -7,12 +7,12 @@ module.exports = {
   execute: async ({ args, sock, senderId }) => {
     const sender = senderId
 
-    if (sender.includes('@g.us')){
-      return {
-        type: 'text',
-        content: '⚠️ Command */anonym* tidak bisa digunakan di Group, hanya Chat Pribadi.'
-      }
-    }
+    // if (sender.includes('@g.us')){
+    //   return {
+    //     type: 'text',
+    //     content: '⚠️ Command */anonym* tidak bisa digunakan di Group, hanya Chat Pribadi.'
+    //   }
+    // }
 
     // Perintah exit untuk keluar dari mode anonim
     if (args && args.length > 0 && args[0].toLowerCase() === 'exit') {

@@ -7,7 +7,7 @@ const commands = loadCommands();
 logger.info('Command yang berhasil dimuat: ' + [...commands.keys()])
 
 const commandRouter = async (message) => {
-  const { conversation, senderId, sock, media } = message;
+  const { conversation, senderId, sock, media, senderName} = message;
 
   // Memisahkan command dan argumen
   const [command, ...args] = conversation.trim().split(/\s+/);
@@ -21,6 +21,7 @@ const commandRouter = async (message) => {
       senderId,
       sock,
       media,
+      senderName
     });
   }
 

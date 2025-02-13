@@ -12,7 +12,7 @@ const activeDuration = 5 * 60 * 1000;
 
 const handleIncomingMessage = async (message) => {
   try {
-    const { conversation, senderId, sock, chatHistory, receivedMessage } = message;
+    const { conversation, senderId, sock, chatHistory, receivedMessage, senderName } = message;
     const { mediaBuffer, messageType, messageCaption } = message.media;
     
     
@@ -22,7 +22,8 @@ const handleIncomingMessage = async (message) => {
         conversation,
         senderId,
         sock,
-        media : {mediaBuffer, messageType, messageCaption}
+        media : {mediaBuffer, messageType, messageCaption},
+        senderName
       });
     }
     

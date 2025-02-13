@@ -1,17 +1,17 @@
 module.exports = {
     name: 'greet',
     description: 'Memberikan salam personal.',
-    execute: async ({args}) => {
-      if (!args || args.length === 0) {
+    execute: async ({senderName, senderId}) => {
+      if (!senderName  && senderId.includes('@g.us')){
         return {
           type: 'text',
-          content: '⚠️ Harap masukkan nama setelah perintah /greet. Contoh: /greet Pawarna'
-        };
+          content: 'Bapak/Ibu kamu selalu menyebutmu dalam doanya'
+        }
       }
-      const name = args.join(' ');
+      senderId = '@' + senderId.split('@')[0]
       return {
         type: "text",
-        content: `👋 Halo ${name}! Pawarna menyapa dengan gaya Gen Z banget! 😎` 
+        content: `👋 Halo ${senderName || senderId}! Pawarna menyapa dengan gaya Gen Z banget! 😎` 
       };
     },
   };
