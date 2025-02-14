@@ -233,7 +233,8 @@ async function forwardMessage(sock, sender, msg) {
         // Download dan forward dokumen
         const buffer = await downloadMediaMessage(msg, "buffer");
         const filename = msg.message.documentMessage.fileName || 'document';
-        await sock.sendMessage(partnerJid, { document: buffer, fileName: filename }, { messageId });
+        const caption = msg.message.documentMessage.caption || '';
+        await sock.sendMessage(partnerJid, { document: buffer, fileName: filename, caption }, { messageId });
       
       } else if (msg.message?.audioMessage) {
         // Download dan forward audio (bisa berupa voice note atau audio biasa)
