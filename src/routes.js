@@ -13,7 +13,15 @@ const commandRouter = async (message) => {
   const [command, ...args] = conversation.trim().split(/\s+/);
   
   // Cek apakah command valid
-  const commandKey = command.startsWith('/') ? command.slice(1).toLowerCase() : command.toLowerCase();
+  //const commandKey = command.startsWith('/') ? command.slice(1).toLowerCase() : command.toLowerCase();
+  const prefixes = ["/", ".", "!"];
+  let commandKey = command.toLowerCase();
+  for (const prefix of prefixes) {
+    if (command.startsWith(prefix)) {
+      commandKey = command.slice(1).toLowerCase();
+      break;
+    }
+  }
   if (commands.has(commandKey)) {
     // Jalankan command jika valid
     return await commands.get(commandKey).execute({
@@ -30,14 +38,15 @@ const commandRouter = async (message) => {
   if (closestCommand) {
     return {
       type : 'text',
-      content : `⚠️ Mungkin maksud Anda: *${closestCommand}*? Ketik command tersebut untuk melanjutkan.`
+      content : `⚠ Mungkin maksud Anda: *${closestCommand}*? Ketik command tersebut untuk melanjutkan.`
     };
   }
 
   // Jika tidak ada yang cocok
   return {
     type: "text",
-    content: '⚠️ Maaf, command tidak dikenali. Ketik */help* untuk melihat daftar command yang tersedia.'
+    content: '⚠ Maaf, command tidak dikenali. Ketik */help* untuk melihat daftar command yang tersedia.'
   };
 };
+
 module.exports = { commandRouter };

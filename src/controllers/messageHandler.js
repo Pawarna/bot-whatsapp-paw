@@ -15,8 +15,9 @@ const handleIncomingMessage = async (message) => {
     const { conversation, senderId, sock, chatHistory, receivedMessage, senderName } = message;
     const { mediaBuffer, messageType, messageCaption } = message.media;
     
-    
-    if (conversation && conversation.startsWith("/")) {
+    const prefixes = ["/", ".", "!"];
+
+    if (conversation && prefixes.some(prefix => conversation.startsWith(prefix))) {
       logger.info(`Menjalankan command untuk user ${senderId}: ${conversation}`);
       return await commandRouter({
         conversation,
