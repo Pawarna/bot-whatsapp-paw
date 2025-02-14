@@ -1,4 +1,5 @@
 // services/anonymousService.js
+const { downloadMediaMessage } = require('@whiskeysockets/baileys');
 const {createConnection} = require('../config/db.js');
 
 const COOLDOWN_SECONDS = 60; // periode cooldown dalam detik
@@ -143,41 +144,49 @@ async function forwardMessage(sock, sender, msg) {
     if (rows.length > 0 && rows[0].partner_jid) {
       const partnerJid = rows[0].partner_jid;
 
-      const message = msg.message?.conversation || msg.message?.extendedTextMessage?.text
-
-      const quoted = msg.message.extendedTextMessage?.contextInfo?.quotedMessage || msg.message.extendedTextMessage?.contextInfo?.quotedMessage?.conversation;
+      // Ambil pesan teks (jika ada)
+      const message = msg.message?.conversation || msg.message?.extendedTextMessage?.text;
+      const quoted = msg.message.extendedTextMessage?.contextInfo?.quotedMessage ||
+                     msg.message.extendedTextMessage?.contextInfo?.quotedMessage?.conversation;
       const quotedKey = msg.message.extendedTextMessage?.contextInfo?.stanzaId;
       const participant = msg.message.extendedTextMessage?.contextInfo?.participant;
       const messageId = msg.key?.id;
 
       if (message) {
-        await sock.sendMessage(partnerJid, { 
-          text: message,
-          contextInfo: quoted
+        await sock.sendMessage(
+          partnerJid,
+          { 
+            text: message,
+            contextInfo: quoted
               ? { 
-                    quotedMessage: quoted, 
-                    stanzaId: quotedKey,
-                    participant: msg.message.extendedTextMessage?.contextInfo?.quotedMessage?.conversation? participant : partnerJid  // pastikan participant mengacu ke pengirim asli pesan yang direply
+                  quotedMessage: quoted, 
+                  stanzaId: quotedKey,
+                  // Pastikan participant mengacu ke pengirim asli pesan yang direply
+                  participant: msg.message.extendedTextMessage?.contextInfo?.quotedMessage?.conversation ? participant : partnerJid
                 }
               : undefined
-        },
-        { messageId }
-      );
-      } else if (msg.message?.reactionMessage){
+          },
+          { messageId }
+        );
+      
+      } else if (msg.message?.reactionMessage) {
+        // Forward pesan reaction
         await sock.sendMessage(
           partnerJid,
           {
-              react: {
-                  text: msg.message.reactionMessage?.text,
-                  key: {
-                    remoteJid: partnerJid,
-                    fromMe: !msg.message.reactionMessage?.key?.fromMe,
-                    id: msg.message.reactionMessage?.key?.id,
-                  }
+            react: {
+              text: msg.message.reactionMessage?.text,
+              key: {
+                remoteJid: partnerJid,
+                fromMe: !msg.message.reactionMessage?.key?.fromMe,
+                id: msg.message.reactionMessage?.key?.id,
               }
+            }
           }
-        )
+        );
+      
       } else if (msg.message?.pollCreationMessageV3) {
+        // Forward pesan poll
         const poll = msg.message.pollCreationMessageV3;
         const question = poll.name;
         const options = poll.options.map(opt => opt.optionName);
@@ -191,10 +200,70 @@ async function forwardMessage(sock, sender, msg) {
               selectableCount: poll.selectableOptionsCount || 1
             }
           },
-          { messageId: messageId } // Gunakan ID yang sama atau generate baru
+          { messageId }
         );
+      
+      } else if (msg.message?.stickerMessage) {
+        // Download dan forward sticker
+        const buffer = await downloadMediaMessage(msg, "buffer");
+        await sock.sendMessage(partnerJid, { sticker: buffer }, { messageId });
+      
+      } else if (msg.message?.imageMessage) {
+        // Download dan forward image
+        const buffer = await downloadMediaMessage(msg, "buffer");
+        const caption = msg.message.imageMessage.caption || '';
+        await sock.sendMessage(partnerJid, { image: buffer, caption }, { messageId });
+      
+      } else if (msg.message?.videoMessage) {
+        // Download video (bisa berupa video biasa, GIF, atau video note)
+        const buffer = await downloadMediaMessage(msg, "buffer");
+        const caption = msg.message.videoMessage.caption || '';
+        if (msg.message.videoMessage.gifPlayback) {
+          // Forward sebagai GIF
+          await sock.sendMessage(partnerJid, { video: buffer, caption, gifPlayback: true }, { messageId });
+        } else {
+          // Forward video biasa
+          await sock.sendMessage(partnerJid, { video: buffer, caption }, { messageId });
+        }
+      } else if (msg.message?.ptvMessage) {
+        const buffer = await downloadMediaMessage(msg, "buffer");
+        await sock.sendMessage(partnerJid, { video: buffer, ptv: true})
+
+      } else if (msg.message?.documentMessage) {
+        // Download dan forward dokumen
+        const buffer = await downloadMediaMessage(msg, "buffer");
+        const filename = msg.message.documentMessage.fileName || 'document';
+        await sock.sendMessage(partnerJid, { document: buffer, fileName: filename }, { messageId });
+      
+      } else if (msg.message?.audioMessage) {
+        // Download dan forward audio (bisa berupa voice note atau audio biasa)
+        const buffer = await downloadMediaMessage(msg, "buffer");
+        const mimetype = msg.message.audioMessage.mimetype || 'audio/mp4';
+        await sock.sendMessage(partnerJid, { audio: buffer, mimetype, ptt: true }, { messageId });
+      
+      } else if (msg.message?.locationMessage) {
+        // Forward pesan lokasi
+        const location = msg.message.locationMessage;
+        await sock.sendMessage(
+          partnerJid,
+          {
+            location: {
+              degreesLatitude: location.degreesLatitude,
+              degreesLongitude: location.degreesLongitude,
+              name: location.name,
+              address: location.address
+            }
+          },
+          { messageId }
+        );
+      
+      } else if (msg.message?.contactMessage) {
+        // Forward pesan kontak
+        await sock.sendMessage(partnerJid, { contact: msg.message.contactMessage }, { messageId });
+      
+      } else {
+        await sock.sendMessage(sender, {text: "⚠️ Jenis pesan tidak didukung untuk forwarding."});
       }
-  
     }
   } catch (error) {
     console.error('Error pada forwardMessage:', error);
@@ -202,6 +271,7 @@ async function forwardMessage(sock, sender, msg) {
     connection.end();
   }
 }
+
 
 /**
  * Mengeluarkan pengguna dari mode chat anonim.
