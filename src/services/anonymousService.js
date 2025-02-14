@@ -1,5 +1,5 @@
 // services/anonymousService.js
-const { downloadMediaMessage } = require('@whiskeysockets/baileys');
+const { downloadMediaMessage, proto } = require('@whiskeysockets/baileys');
 const {createConnection} = require('../config/db.js');
 
 const COOLDOWN_SECONDS = 60; // periode cooldown dalam detik
@@ -262,6 +262,25 @@ async function forwardMessage(sock, sender, msg) {
         // Forward pesan kontak
         await sock.sendMessage(partnerJid, { contact: msg.message.contactMessage }, { messageId });
       
+      } else if (msg.message?.protocolMessage) {
+        const protocol = msg.message.protocolMessage;
+        await sock.sendMessage(partnerJid, { delete: {
+          remoteJid: partnerJid,
+          fromMe: true,
+          id: protocol.key.id
+        } });
+        
+      } else if (msg.message?.editedMessage) {
+        const protocol = msg.message?.editedMessage.message.protocolMessage;
+        console.log(protocol)
+        await sock.sendMessage(partnerJid, {
+          text : protocol.editedMessage.conversation,
+          edit : {
+            remoteJid: partnerJid,
+            fromMe: true,
+            id: protocol.key.id
+          }
+        })
       } else {
         await sock.sendMessage(sender, {text: "⚠️ Jenis pesan tidak didukung untuk forwarding."});
       }
@@ -323,9 +342,32 @@ async function exitChat(userJid, sock, options = {}) {
   }
 }
 
+async function getStatistics() {
+  const connection = await createConnection();
+  try {
+    // Total pengguna online (baik yang menunggu maupun berpasangan)
+    const [totalRows] = await connection.execute('SELECT COUNT(*) as total FROM anonymous_users');
+    const totalOnline = totalRows[0].total;
+
+    // Top 5 topik yang sedang populer (tidak termasuk NULL)
+    const [topicRows] = await connection.execute(
+      'SELECT topic, COUNT(*) as count FROM anonymous_users WHERE topic IS NOT NULL GROUP BY topic ORDER BY count DESC LIMIT 5'
+    );
+    const topTopics = topicRows.map(row => ({ topic: row.topic, count: row.count }));
+
+    return { totalOnline, topTopics };
+  } catch (error) {
+    console.error('Error getting statistics:', error);
+    return { totalOnline: 0, topTopics: [] };
+  } finally {
+    connection.end();
+  }
+}
+
 module.exports = {
   startChat,
   isInChat,
   forwardMessage,
   exitChat,
+  getStatistics
 };

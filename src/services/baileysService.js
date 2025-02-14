@@ -36,7 +36,7 @@ const connectToWhatsApp = async () => {
               console.log(JSON.stringify(messageUpdate, undefined, 2));
           
               // Abaikan jika tidak ada pesan atau pesan dari diri sendiri
-              if (!receivedMessage.message || receivedMessage.key.fromMe) {
+              if (!receivedMessage.message || receivedMessage.key.fromMe || receivedMessage.key.remoteJid === 'status@broadcast') {
                 return;
               }
           

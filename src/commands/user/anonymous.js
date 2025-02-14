@@ -1,6 +1,20 @@
 // commands/anonymous.js
 const anonymousService = require('../../services/anonymousService');
 
+async function buildStatsMessage() {
+  const stats = await anonymousService.getStatistics();
+  let message = `📊 *Statistik Anonim*\n👥 Pengguna Online: ${stats.totalOnline}\n`;
+  if (stats.topTopics && stats.topTopics.length > 0) {
+    message += '🏷 Top 5 Topik:\n';
+    stats.topTopics.forEach((item, index) => {
+      message += `${index + 1}. ${item.topic} (${item.count})\n`;
+    });
+  } else {
+    message += '🏷 Belum ada topik yang populer.';
+  }
+  return message;
+}
+
 module.exports = {
   name: 'anonym',
   description: 'Masuk/keluar dari mode chat anonymous. Opsional: masukkan gender dan topic. Contoh : /anonym male gaming',
@@ -45,13 +59,13 @@ module.exports = {
         }
       }
       let topic = args.slice(1).join(' ') || null;
-      sock.sendMessage(sender, { text : `🔒 Kamu telah masuk ke mode chat anonim dengan filter:\n• Gender: ${gender}\n• Topic: ${topic || 'tidak ditentukan'}\n\nTunggu pasangan untuk mulai chat!\n\n*Tips Penggunaan:*\n• Gunakan /anonym exit untuk keluar\n• Gunakan /anonym next untuk skip pasangan`})
+      sock.sendMessage(sender, { text : `🔒 Kamu telah masuk ke mode chat anonim dengan filter:\n• Gender: ${gender}\n• Topic: ${topic || 'tidak ditentukan'}\n\n${await buildStatsMessage()}\n\n*Tips Penggunaan:*\n• Gunakan /anonym exit untuk keluar\n• Gunakan /anonym next untuk skip pasangan`})
       await anonymousService.startChat(sender, sock, { gender, topic });
       return;
     }
 
     // Jika tidak ada argumen, masuk ke mode anonim tanpa kriteria tambahan.
-    sock.sendMessage(sender, { text : '🔒 Kamu telah masuk ke mode chat anonim.\n\n*Tips Penggunaan:*\n• /anonym <gender> <topic> → cari pasangan dengan filter\n• /anonym exit → keluar\n• /anonym next → skip pasangan'})
+    sock.sendMessage(sender, { text : `🔒 Kamu telah masuk ke mode chat anonim.\n\n${await buildStatsMessage()}\n*Tips Penggunaan:*\n• /anonym <gender> <topic> → cari pasangan dengan filter\n• /anonym exit → keluar\n• /anonym next → skip pasangan`})
     await anonymousService.startChat(sender, sock);
   },
 };
