@@ -98,6 +98,8 @@ const connectToWhatsApp = async () => {
                 logger.info(`Reply sent to ${senderId}`);
               }
 
+              await sock.sendPresenceUpdate('paused', senderId)
+
             } catch (error) {
               logger.error(`Error processing message: ${error.message}`);
             }

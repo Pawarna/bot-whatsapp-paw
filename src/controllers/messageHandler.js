@@ -19,6 +19,8 @@ const handleIncomingMessage = async (message) => {
 
     if (conversation && prefixes.some(prefix => conversation.startsWith(prefix))) {
       logger.info(`Menjalankan command untuk user ${senderId}: ${conversation}`);
+      await sock.sendPresenceUpdate('composing', senderId)
+      
       return await commandRouter({
         conversation,
         senderId,
@@ -52,6 +54,8 @@ const handleIncomingMessage = async (message) => {
         lastActive: Date.now(),
       };
 
+      await sock.sendPresenceUpdate('composing', senderId)
+
       await saveActiveUser(senderId, updatedUserData);
 
       if (mediaBuffer) {
@@ -73,15 +77,27 @@ const handleIncomingMessage = async (message) => {
         };
       }
       if (conversation) {
+
         logger.info(`Balas pesan ke ${senderId}: ${conversation}`);
         await saveMessageToDb(senderId, "user", conversation);
 
         const replyMessage = await geminiRequest(conversation, chatHistory);
         await saveMessageToDb(senderId, "model", replyMessage);
-        return {
-          type: "text",
-          content: replyMessage,
-        };
+        
+        await sock.sendMessage(senderId, {text: replyMessage});
+
+        const stopKeyword = ["stop", "diem", "berisik"];
+        if (stopKeyword.some(keyword => conversation.startsWith(keyword)) && conversation.includes('paw')){
+          userData.isActive = false
+          const updatedUserData = {
+            ...userData,
+            lastActive: Date.now(),
+          };
+
+          await saveActiveUser(senderId, updatedUserData)
+        }
+
+        return;
       }
     }
 
