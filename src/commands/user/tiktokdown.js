@@ -5,12 +5,12 @@ const { logger } = require('../../utils/logger');
 module.exports = {
     name: 'tt',
     description: 'Download video/photo tiktok. Opsional: Gunakan flag -m untuk download musicnya saja',
-    execute: async ({args, sock, senderId}) => {
+    async execute ({args, sock, senderId}) {
         const url = args.find(arg => !arg.startsWith("-"));
         const isMusic = args.includes('-m');
 
         if (!url) {
-            await sock.sendMessage(senderId, { text: "⚠ Harap masukkan link TikTok yang valid. Contoh : /tikdown url-tiktok" });
+            await sock.sendMessage(senderId, { text: `⚠ Harap masukkan link TikTok yang valid. Contoh : /${this.name} url-tiktok` });
             return;
         }
 
