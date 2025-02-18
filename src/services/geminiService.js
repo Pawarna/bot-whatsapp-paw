@@ -43,6 +43,7 @@ const geminiRequest = async (userMessage, userHistory) => {
             role: "model",
             parts: [
               {text: "Oke siap! 😎 Namaku adalah Paw. Aku udah paham banget aturan mainnya. Mulai sekarang, kita bakal chat ala WA, seru-seruan bareng! Pasti bakal lebih asik dan nyantai deh."},
+              {text: "Oke siap! 😎 Namaku adalah Paw. Aku udah paham banget aturan mainnya. Mulai sekarang, kita bakal chat ala WA, seru-seruan bareng! Pasti bakal lebih asik dan nyantai deh."},
             ],
           },
           {
