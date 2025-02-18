@@ -62,7 +62,7 @@ const handleIncomingMessage = async (message) => {
         await saveMessageToDb(
           senderId,
           "user",
-          `Pesan berupa file : ${messageType}, dengan caption :${messageCaption}`
+          `@${senderName}: Pesan berupa file : ${messageType}, dengan caption :${messageCaption}`
         );
         const replyMessage = await analyzeFile(
           mediaBuffer,
@@ -79,7 +79,7 @@ const handleIncomingMessage = async (message) => {
       if (conversation) {
 
         logger.info(`Balas pesan ke ${senderId}: ${conversation}`);
-        await saveMessageToDb(senderId, "user", conversation);
+        await saveMessageToDb(senderId, "user", `@${senderName}: ${conversation}`);
 
         const replyMessage = await geminiRequest(conversation, chatHistory);
         await saveMessageToDb(senderId, "model", replyMessage);
@@ -110,13 +110,13 @@ const handleIncomingMessage = async (message) => {
         lastActive: Date.now(),
       };
       await saveActiveUser(senderId, newUserData);
-      await saveMessageToDb(senderId, "user", conversation);
+      await saveMessageToDb(senderId, "user", `@${senderName}: ${conversation}`);
 
       if (mediaBuffer) {
         await saveMessageToDb(
           senderId,
           "user",
-          `Pesan berupa file : ${messageType}, dengan caption :${messageCaption}`
+          `@${senderName}: Pesan berupa file : ${messageType}, dengan caption :${messageCaption}`
         );
         const replyMessage = await analyzeFile(
           mediaBuffer,
