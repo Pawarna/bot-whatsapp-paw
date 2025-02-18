@@ -1,5 +1,4 @@
 const { createConnection } = require('../config/db.js');
-const { logger } = require('../utils/logger.js');
 
     // Fungsi untuk menyimpan pesan ke database
     const saveMessageToDb = async (userId, role, message) => {
@@ -50,24 +49,5 @@ const { logger } = require('../utils/logger.js');
            }
         }
     };
-
-    const resetChatHistory = async (userId) => {
-        let conn
-        try {
-            conn = await createConnection();
-
-            const query = 'DELETE FROM chat_histories where userId = ';
-            const value = [userId];
-
-            await conn.query(query, value);
-
-            return true  
-        } catch (error) {
-            logger.error("Gagal chat history: ", error);
-            return false
-        } finally{
-            await conn.end();
-        }
-    }
    
-module.exports = { saveMessageToDb, loadUserHistoryFromDb, resetChatHistory };
+module.exports = { saveMessageToDb, loadUserHistoryFromDb };
