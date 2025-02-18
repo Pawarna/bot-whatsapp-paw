@@ -4,7 +4,7 @@ const axios = require("axios");
 module.exports = {
   name: "ig",
   description: "Download feed/reels dari Instagram",
-  execute: async ({ args, sock, senderId }) => {
+  async execute ({ args, sock, senderId }){
     const url = args[0];
     if (!url) {
       return {
