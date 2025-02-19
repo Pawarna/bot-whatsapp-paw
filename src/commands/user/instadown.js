@@ -1,4 +1,4 @@
-const ig = require("instagram-url-direct");
+const {instagramGetUrl} = require("instagram-url-direct");
 const axios = require("axios");
 
 module.exports = {
@@ -15,7 +15,7 @@ module.exports = {
 
     let datas;
     try {
-      datas = await ig.default(url);
+      datas = await instagramGetUrl(url);
       if (!datas || !datas.media_details || datas.media_details.length === 0) {
         return {
           type: "text",

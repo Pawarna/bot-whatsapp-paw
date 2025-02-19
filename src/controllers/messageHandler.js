@@ -14,7 +14,7 @@ const handleIncomingMessage = async (message) => {
   try {
     const { conversation, senderId, sock, chatHistory, receivedMessage, senderName } = message;
     const { mediaBuffer, messageType, messageCaption } = message.media;
-    
+
     const prefixes = ["/", ".", "!"];
 
     if (conversation && prefixes.some(prefix => conversation.startsWith(prefix))) {
@@ -37,6 +37,7 @@ const handleIncomingMessage = async (message) => {
     }
 
     let userData = await loadActiveUser(senderId);
+    const namedConversation = `@${senderName}: ${conversation}`
 
     // Cek Inaktif diawal
     if (userData && userData.isActive) {
@@ -79,15 +80,15 @@ const handleIncomingMessage = async (message) => {
       if (conversation) {
 
         logger.info(`Balas pesan ke ${senderId}: ${conversation}`);
-        await saveMessageToDb(senderId, "user", `@${senderName}: ${conversation}`);
+        await saveMessageToDb(senderId, "user", namedConversation);
 
-        const replyMessage = await geminiRequest(conversation, chatHistory);
+        const replyMessage = await geminiRequest(namedConversation, chatHistory);
         await saveMessageToDb(senderId, "model", replyMessage);
         
         await sock.sendMessage(senderId, {text: replyMessage});
 
         const stopKeyword = ["stop", "diem", "berisik"];
-        if (stopKeyword.some(keyword => conversation.startsWith(keyword)) && conversation.includes('paw')){
+        if (stopKeyword.some(keyword => conversation.includes(keyword)) && conversation.includes('paw')){
           userData.isActive = false
           const updatedUserData = {
             ...userData,
@@ -110,7 +111,7 @@ const handleIncomingMessage = async (message) => {
         lastActive: Date.now(),
       };
       await saveActiveUser(senderId, newUserData);
-      await saveMessageToDb(senderId, "user", `@${senderName}: ${conversation}`);
+      await saveMessageToDb(senderId, "user", namedConversation);
 
       if (mediaBuffer) {
         await saveMessageToDb(
@@ -130,7 +131,7 @@ const handleIncomingMessage = async (message) => {
           content: replyMessage,
         };
       }
-      const replyMessage = await geminiRequest(conversation, chatHistory);
+      const replyMessage = await geminiRequest(namedConversation, chatHistory);
       await saveMessageToDb(senderId, "model", replyMessage);
       return {
         type: "text",

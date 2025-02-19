@@ -69,6 +69,8 @@ const geminiRequest = async (userMessage, userHistory) => {
                 ],
             },
         ]
+
+        console.log(JSON.stringify(chat));
         
         const result = await model.generateContent({
             contents: chat,
