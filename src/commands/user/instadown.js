@@ -74,7 +74,7 @@ module.exports = {
     name: 'ig',
     description: 'Download feed/reels dari Instagram',
     async execute({ args, sock, senderId }) {
-        const url = args[0];
+        const url = args[0].trim();
         if (!url) {
             return {
                 type: 'text',
