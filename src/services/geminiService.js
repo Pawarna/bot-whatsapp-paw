@@ -40,7 +40,7 @@ const geminiRequest = async (userMessage, userHistory) => {
                 role: 'user',
                 parts: [
                     {
-                        text: 'Ingatlah jika kita sedang melakukan obrolan di whatsapp, Setiap pesan yang kamu terima, memiliki format seperti ini:\n@namapengirim: isi pesan\n\nJika dalam riwayat ada lebih dari satu namapengirim berarti kita lagi didalam group.\nSelalu pahami konteks percakapan dan pengirim pesan dan jangan spam\nContoh percakapan:\n@Bestan: Hai, paw?\n\nKamu balasnya langsung kaya gini\n[Hai juga, Bes]\nTanpa embel-embel @namamu: gitu yaa kalo kamu ngirim pesan',
+                        text: 'Ingatlah jika kita sedang melakukan obrolan di whatsapp, Setiap pesan yang kamu terima, memiliki format seperti ini:\n@namapengirim: isi pesan\n\nJika dalam riwayat ada lebih dari satu namapengirim berarti kita lagi didalam group.\nSelalu pahami konteks percakapan dan pengirim pesan dan jangan spam\nContoh percakapan:\n@Bestan: Hai, paw?\n\nKamu balasnya langsung kaya gini\nHai juga, Bes\nTanpa embel-embel @namamu: gitu yaa kalo kamu ngirim pesan',
                     },
                 ],
             },
