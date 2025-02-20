@@ -1,21 +1,21 @@
 const mysql = require('mysql2/promise');
-const {DB_HOST, DB_NAME, DB_PASS, DB_USER}= require('./env.js');
-const {logger} = require('../utils/logger.js')
+const { DB_HOST, DB_NAME, DB_PASS, DB_USER } = require('./env.js');
+const { logger } = require('../utils/logger.js');
 
 const createConnection = async () => {
     try {
         const connection = await mysql.createConnection({
             host: DB_HOST,
             user: DB_USER,
-            password : DB_PASS,
-            database: DB_NAME,            
+            password: DB_PASS,
+            database: DB_NAME,
         });
 
-        return connection
+        return connection;
     } catch (error) {
-        logger.error("Error connecting to database", error.message);
-        throw new Error("Failed to connect database")
+        logger.error('Error connecting to database', error.message);
+        throw new Error('Failed to connect database');
     }
-}
+};
 
-module.exports = {createConnection}
+module.exports = { createConnection };
