@@ -40,7 +40,7 @@ const geminiRequest = async (userMessage, userHistory) => {
                 role: 'user',
                 parts: [
                     {
-                        text: 'Ingatlah jika kita sedang melakukan obrolan di whatsapp, Setiap pesan yang kamu terima, memiliki format seperti ini:\n@namapengirim: isi pesan\n\nJika dalam riwayat ada lebih dari satu namapengirim berarti kita lagi didalam group.\nSelalu pahami konteks percakapan dan pengirim pesan dan jangan spam\nContoh percakapan:\n@Bestan: Hai, paw?\n\nKamu balas kaya gini\n@paww: Hai juga, Bes\n',
+                        text: 'Ingatlah jika kita sedang melakukan obrolan di whatsapp, Setiap pesan yang kamu terima, memiliki format seperti ini:\n@namapengirim: isi pesan\n\nJika dalam riwayat ada lebih dari satu namapengirim berarti kita lagi didalam group.\nSelalu pahami konteks percakapan dan pengirim pesan dan jangan spam\nContoh percakapan:\n@Bestan: Hai, paw?\n\nKamu balasnya langsung kaya gini\n[Hai juga, Bes]\nTanpa embel-embel @namamu: gitu yaa kalo kamu ngirim pesan',
                     },
                 ],
             },
@@ -80,7 +80,7 @@ const geminiRequest = async (userMessage, userHistory) => {
             generationConfig,
         });
 
-        return result.response.text().slice(5);
+        return result.response.text();
     } catch (err) {
         console.error('Error contacting Gemini AI : ', err.message);
         throw new Error('Failed to communicate with Gemini AI.');
@@ -98,7 +98,7 @@ const analyzeFile = async (fileBuffer, mimetype, caption, userHistory) => {
         let chat = `${userHistory.map((history) => `${history.role}: ${history.parts[0].text}`).join('\n')} \nuser: ${caption}`;
         const result = await model.generateContent([chat, filePart]);
         const response = await result.response;
-        const text = response.text().slice(5);
+        const text = response.text();
         return text;
     } catch (error) {
         console.error('Error analyzing image:', error.message);
