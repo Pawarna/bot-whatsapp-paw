@@ -85,6 +85,7 @@ module.exports = {
         let datas;
         try {
             datas = await instagramScraper(url);
+            // datas = await instagramGetUrl(url); //statuscode 401 :(
             if (!datas || !datas.media_details || datas.media_details.length === 0) {
                 return {
                     type: 'text',
@@ -121,8 +122,9 @@ module.exports = {
                         text: '⚠ Terjadi kesalahan saat mengunduh salah satu media.',
                     });
                 }
-                return;
             }
+
+            return;
         } catch (error) {
             console.error('Error saat mengunduh atau mengirimkan media:', error);
             return {
