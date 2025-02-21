@@ -167,7 +167,7 @@ module.exports = {
             await sock.sendPresenceUpdate('composing', senderId);
 
             if (datas.media.length === 1) {
-                const response = await axios.get(datas.media.url, { responseType: 'stream' });
+                const response = await axios.get(datas.media[0].url, { responseType: 'stream' });
                 await sock.sendMessage(senderId, { [datas.media.type]: { stream: response.data }, caption });
                 return;
             }
