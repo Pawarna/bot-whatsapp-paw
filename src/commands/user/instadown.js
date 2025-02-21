@@ -150,7 +150,7 @@ module.exports = {
                 return;
             }
 
-            caption = `${datas.author}\n\n${datas.desc ? datas.desc : ''}`;
+            caption = `*${datas.author}*\n\n${datas.desc ? datas.desc : ''}`;
         } catch (error) {
             logger.error('Error saat mengambil data dari Instagram:', error);
             await sock.sendMessage(senderId, {
