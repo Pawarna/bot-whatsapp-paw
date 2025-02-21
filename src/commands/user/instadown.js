@@ -138,7 +138,7 @@ module.exports = {
             return;
         }
 
-        let data;
+        let datas;
         let caption;
         try {
             datas = await ambilInfoPostingan(url);
@@ -147,14 +147,16 @@ module.exports = {
                 await sock.sendMessage(senderId, {
                     text: '⚠ Gagal menemukan media pada postingan Instagram. Pastikan link yang diberikan benar dan postingan bersifat publik.',
                 });
+                return;
             }
 
-            caption = `${data.author}\n\n${data.desc ? data.desc : ''}`;
+            caption = `${datas.author}\n\n${datas.desc ? datas.desc : ''}`;
         } catch (error) {
             logger.error('Error saat mengambil data dari Instagram:', error);
             await sock.sendMessage(senderId, {
                 text: '⚠ Terjadi kesalahan saat mengambil data dari Instagram. Pastikan link tersebut valid dan postingan bersifat publik.',
             });
+            return;
         }
 
         try {
