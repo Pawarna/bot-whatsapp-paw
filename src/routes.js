@@ -3,8 +3,19 @@ const { getClosestCommand } = require('./utils/stringSimilarity');
 const { logger } = require('./utils/logger.js');
 
 // Memuat semua command
-const commands = loadCommands();
+const { commands } = loadCommands();
 logger.info('Command yang berhasil dimuat: ' + [...commands.keys()]);
+
+// Membuat aliasMap: memetakan alias ke command yang sama
+const aliasMap = new Map();
+for (const [cmdName, command] of commands.entries()) {
+    if (command.aliases && Array.isArray(command.aliases)) {
+        command.aliases.forEach(alias => {
+            aliasMap.set(alias.toLowerCase(), command);
+        });
+    }
+}
+logger.info('Alias yang terdaftar: ' + [...aliasMap.keys()]);
 
 const commandRouter = async (message) => {
     const { conversation, senderId, sock, media, senderName } = message;
@@ -12,8 +23,7 @@ const commandRouter = async (message) => {
     // Memisahkan command dan argumen
     const [command, ...args] = conversation.trim().split(/\s+/);
 
-    // Cek apakah command valid
-    //const commandKey = command.startsWith('/') ? command.slice(1).toLowerCase() : command.toLowerCase();
+    // Menangani prefix
     const prefixes = ['/', '.', '!'];
     let commandKey = command.toLowerCase();
     for (const prefix of prefixes) {
@@ -22,9 +32,20 @@ const commandRouter = async (message) => {
             break;
         }
     }
+
+    let commandToExecute = null;
+
+    // Cek apakah command valid di map utama
     if (commands.has(commandKey)) {
-        // Jalankan command jika valid
-        return await commands.get(commandKey).execute({
+        commandToExecute = commands.get(commandKey);
+    } 
+    // Jika tidak, cek alias
+    else if (aliasMap.has(commandKey)) {
+        commandToExecute = aliasMap.get(commandKey);
+    }
+
+    if (commandToExecute) {
+        return await commandToExecute.execute({
             args,
             senderId,
             sock,
@@ -33,8 +54,9 @@ const commandRouter = async (message) => {
         });
     }
 
-    // Jika tidak valid, cari command yang mirip
-    const closestCommand = getClosestCommand(commandKey, [...commands.keys()]);
+    // Jika tidak valid, cari command yang mirip (termasuk alias)
+    const allCommandKeys = [...commands.keys(), ...aliasMap.keys()];
+    const closestCommand = getClosestCommand(commandKey, allCommandKeys);
     if (closestCommand) {
         return {
             type: 'text',
