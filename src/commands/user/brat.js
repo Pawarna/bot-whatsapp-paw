@@ -146,7 +146,7 @@ module.exports = {
             // Buat sticker dengan metadata menggunakan wa-sticker-formatter
             const sticker = new Sticker(blurredBuffer, {
                 pack: 'created by ' + senderName, // Ganti dengan nama pack yang diinginkan
-                author: `@paww-bot • ${sock.user.id.split('@')[0]}`, // Ganti dengan nama author yang diinginkan
+                author: `@paww-bot • ${sock.user.id.split(':')[0]}`, // Ganti dengan nama author yang diinginkan
                 type: 'full', // Opsi: 'full' atau 'crop'
                 quality: 100, // Kualitas sticker (default 100)
             });
